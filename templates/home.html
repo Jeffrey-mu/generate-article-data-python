@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI article generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+</head>
+<style>
+  body {
+    padding: 10px;
+  }
+
+  .main {
+    max-width: 700px;
+    margin: 20px auto;
+  }
+
+  form {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 10px;
+    margin-top: 60px;
+  }
+
+  header {
+    border-bottom: 1px solid #ccc;
+  }
+
+</style>
+
+<body>
+  <header class="flex justify-between items-center w-full mt-2 border-b pb-3 sm:px-4 px-2">
+
+    <h1 class="sm:text-2xl text-1xl font-normal ml-2 tracking-tight">ChatGPT AI <span style="color:#1A6292">文章生成<!-- -->
+      </span></h1>
+    <div class="flex flex-row">
+    </div>
+  </header>
+  <main class="main">
+    <form>
+      <div class="mb-3">
+        <label for="title" class="form-label">标题</label>
+        <textarea class="form-control" id="title" rows="3"></textarea>
+        <div id="emailHelp" class="form-text">生成文章标题</div>
+      </div>
+      <div class="mb-3">
+        <label for="prompts" class="form-label">prompts</label>
+        <textarea class="form-control" id="prompts" rows="3"></textarea>
+        <div id="emailHelp" class="form-text">多条prompy以英文 <b style="color: red">'分号'</b> 隔开</div>
+      </div>
+      <div class="d-grid gap-2">
+        <button type="" class="btn btn-primary" id="submit">Submit</button>
+      </div>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-/mhDoLbDldZc3qpsJHpLogda//BVZbgYuw6kof4u2FrCedxOtgRZDTHgHUhOCVim"
+    crossorigin="anonymous"></script>
+  <script>
+    const submit = document.getElementById('submit')
+    const title = document.getElementById('title')
+    const prompts = document.getElementById('prompts')
+    submit.addEventListener('click', () => {
+      $.ajax(`/ai-generate?title=${title.value}&prompts=${prompts.value}`).done(function (res) {
+        console.log(res);
+      });
+    })
+  </script>
+</body>
+
+</html>
