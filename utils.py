@@ -1,48 +1,72 @@
-from docx import Document
-from bs4 import BeautifulSoup
 import openpyxl
+import requests
+import pypandoc
+import json
+import re
+
+def stringEncodingFun(string):
+    if not string:
+        return string
+    specialCharacters = r'&nbsp;|&emsp;|&ensp;|(<!--.*?-->)'
+    string = re.sub(r'&#40;', '(', string)
+    string = re.sub(r'&#41;', ')', string)
+    string = re.sub(r'&#34;', '\"', string)
+    string = re.sub(r'&#39;', '\'', string)
+    string = re.sub(r'&#8194;', '', string)
+    string = re.sub(r'&#8195;', '', string)
+    string = re.sub(r'&#160;', '', string)
+    string = re.sub(r'&#60;', '<', string)
+    string = re.sub(r'&#62;', '>', string)
+    string = re.sub(r'&#38;', '&', string)
+    string = re.sub(r'&#34;', '\"', string)
+    string = re.sub(r'&#169;', '©', string)
+    string = re.sub(r'&#174;', '®', string)
+    string = re.sub(r'&#8482;', '™', string)
+    string = re.sub(r'&#215;', '×', string)
+    string = re.sub(r'&#247;', '÷', string)
+    string = re.sub(r'&nbsp;', ' ', string)
+    string = re.sub(r'&emsp;', '', string)
+    string = re.sub(r'&ensp;', '', string)
+    string = re.sub(r'&lt;', '<', string)
+    string = re.sub(r'&gt;', '>', string)
+    string = re.sub(r'&amp;', '&', string)
+    string = re.sub(r'&quot;', '\"', string)
+    string = re.sub(r'&copy;', '©', string)
+    string = re.sub(r'&reg;', '®', string)
+    string = re.sub(r'&times;', '×', string)
+    string = re.sub(r'&divide;', '÷', string)
+    string = re.sub(r'(<!--.*?-->)', '', string)
+    string = re.sub(r'\\t', '', string)
+    string = re.sub(r'\'', '"', string)
+    return string
 
 
 def format_html(data, file_name):
+  append_data = {}
+  if "title" not in data:
+      data['title'] = []
   title = data['title']
+  append_data['title'] = title
+  if "keywords" not in data:
+      data['keywords'] = []
   keywords = data['keywords']
+  append_data['keywords'] = keywords
+  if "description" not in data:
+      data['description'] = []
   description = data['description']
-  content = data['content']
-  data_type = data['data_type']
-  data_second_type = data['data_second_type']
-
+  append_data['description'] = description
+  if "content" not in data:
+      return
+  append_data = json.dumps(append_data)
+  content = append_data + '<br>' +data['content']
+#   data_type = data['data_type']
+#   data_second_type = data['data_second_type']
   # Create a new document
 
 
   # 获取HTML内容
   html = content
-
-  # 解析HTML内容
-  soup = BeautifulSoup(html, 'html.parser')
-
-  # 创建一个新的Docx文档
-  document = Document()
-   # Add the title, keywords and description to the document
-  document.add_heading(title, level=1)
-  document.add_paragraph('Keywords: {}'.format(keywords))
-  document.add_paragraph('description: {}'.format(description))
-  document.add_paragraph('description: {}'.format(description))
-  document.add_paragraph('data_type: {}'.format(data_type))
-  document.add_paragraph('data_second_type: {}'.format(data_second_type))
-  for tag in soup.find_all():
-      text = tag.text
-      if tag.name == 'p':
-          document.add_paragraph(text)
-      elif tag.name == 'h1':
-          document.add_heading(text, level=1)
-      elif tag.name == 'h2':
-          document.add_heading(text, level=2)
-      elif tag.name == 'h3':
-          document.add_heading(text, level=3)
-      # add other tag handling here
-
-  # 保存文档
-  document.save('./data/' + str(file_name) + '.docx')
+  pypandoc.convert_text(html, 'docx', 'html', outputfile=file_name)  # 将 html 代码转化成docx
 
 def read_elsx(file_path):
   # 打开Excel文件
@@ -72,3 +96,13 @@ def read_elsx(file_path):
 
   # 打印整个数据列表
   return data
+
+def get_atticl_data(title):
+    response = requests.get(f"http://47.104.212.164:3000/dataList?data_type_id=&main_title={title}&content=&src=&pageIndex=1&pageSize=10&manager_name=admin_plus", headers={
+    "accept": "application/json, text/plain, */*",
+    "accept-language": "zh,zh-CN;q=0.9,en;q=0.8",
+    "authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW5fcGx1cyIsInBhc3N3b3JkIjoiaWRndGVjaG5ldHdvcmstODA4IiwiaWF0IjoxNjc4OTMyNjMyLCJleHAiOjE2NzkwMTkwMzJ9.iCa1-hYSjCbNaEUjFRr9VNWLHS2aaVxK8lK1Z1M4kVI"
+    })
+    stream = response.json()
+    return stream
+
