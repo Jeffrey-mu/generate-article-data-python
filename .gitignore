@@ -6,3 +6,4 @@ ai*
 *.xlsx
 config.py
 __pycache__
+log/my.log
