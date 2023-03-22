@@ -113,6 +113,7 @@ def embroidery(title) -> str:
     ]
     try:
         response = get_request(payload)
+        info(response)
         return response
     except (KeyError, IndexError):
         return ""
