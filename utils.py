@@ -4,6 +4,7 @@ import pypandoc
 import json
 import re
 
+
 def stringEncodingFun(string):
     if not string:
         return string
@@ -42,67 +43,48 @@ def stringEncodingFun(string):
 
 
 def format_html(data, file_name):
-  append_data = {}
-  if "title" not in data:
-      data['title'] = []
-  title = data['title']
-  append_data['title'] = title
-  if "keywords" not in data:
-      data['keywords'] = []
-  keywords = data['keywords']
-  append_data['keywords'] = keywords
-  if "description" not in data:
-      data['description'] = []
-  description = data['description']
-  append_data['description'] = description
-  if "content" not in data:
-      return
-  append_data = json.dumps(append_data)
-  content = append_data + '<br>' +data['content']
-#   data_type = data['data_type']
-#   data_second_type = data['data_second_type']
-  # Create a new document
+    html = data
+    pypandoc.convert_text(html, 'docx', 'html', outputfile=file_name)  # 将 html 代码转化成docx
 
 
-  # 获取HTML内容
-  html = content
-  pypandoc.convert_text(html, 'docx', 'html', outputfile=file_name)  # 将 html 代码转化成docx
 
 def read_elsx(file_path):
-  # 打开Excel文件
-  workbook = openpyxl.load_workbook(file_path)
+    # 打开Excel文件
+    workbook = openpyxl.load_workbook(file_path)
 
-  # 获取工作表名称
-  sheet_name = workbook.sheetnames[0]
+    # 获取工作表名称
+    sheet_name = workbook.sheetnames[0]
 
-  # 获取工作表对象
-  sheet = workbook[sheet_name]
+    # 获取工作表对象
+    sheet = workbook[sheet_name]
 
-  # 定义一个空列表
-  data = []
+    # 定义一个空列表
+    data = []
 
-  # 获取标题行的值，用于作为字典的键
-  headers = [cell.value for cell in sheet[1]]
+    # 获取标题行的值，用于作为字典的键
+    headers = [cell.value for cell in sheet[1]]
 
-  # 遍历每一行，并将每一行的数据整理成字典形式，添加到列表中
-  for row in sheet.iter_rows(min_row=2):
-      # 定义一个空字典，用于存储当前行的数据
-      row_data = {}
-      for index, cell in enumerate(row):
-          # 将单元格的值添加到当前行的数据字典中
-          row_data[headers[index]] = cell.value
-      # 将当前行的数据字典添加到整个数据列表中
-      data.append(row_data)
+    # 遍历每一行，并将每一行的数据整理成字典形式，添加到列表中
+    for row in sheet.iter_rows(min_row=2):
+        # 定义一个空字典，用于存储当前行的数据
+        row_data = {}
+        for index, cell in enumerate(row):
+            # 将单元格的值添加到当前行的数据字典中
+            row_data[headers[index]] = cell.value
+        # 将当前行的数据字典添加到整个数据列表中
+        data.append(row_data)
 
-  # 打印整个数据列表
-  return data
+    # 打印整个数据列表
+    return data
+
 
 def get_atticl_data(title):
-    response = requests.get(f"http://47.104.212.164:3000/dataList?data_type_id=&main_title={title}&content=&src=&pageIndex=1&pageSize=10&manager_name=admin_plus", headers={
-    "accept": "application/json, text/plain, */*",
-    "accept-language": "zh,zh-CN;q=0.9,en;q=0.8",
-    "authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW5fcGx1cyIsInBhc3N3b3JkIjoiaWRndGVjaG5ldHdvcmstODA4IiwiaWF0IjoxNjc4OTMyNjMyLCJleHAiOjE2NzkwMTkwMzJ9.iCa1-hYSjCbNaEUjFRr9VNWLHS2aaVxK8lK1Z1M4kVI"
-    })
+    response = requests.get(
+        f"http://47.104.212.164:3000/dataList?data_type_id=&main_title={title}&content=&src=&pageIndex=1&pageSize=10&manager_name=admin_plus",
+        headers={
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "zh,zh-CN;q=0.9,en;q=0.8",
+            "authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW5fcGx1cyIsInBhc3N3b3JkIjoiaWRndGVjaG5ldHdvcmstODA4IiwiaWF0IjoxNjc4OTMyNjMyLCJleHAiOjE2NzkwMTkwMzJ9.iCa1-hYSjCbNaEUjFRr9VNWLHS2aaVxK8lK1Z1M4kVI"
+        })
     stream = response.json()
     return stream
-
