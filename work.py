@@ -1,6 +1,6 @@
 import utils
 from db.query import query_data_by_id
-import generate_nomal as generate
+import generate_v2 as generate
 import json
 
 
