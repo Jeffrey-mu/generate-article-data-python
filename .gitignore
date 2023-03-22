@@ -6,4 +6,5 @@ ai*
 *.xlsx
 config.py
 __pycache__
+# 禁止提交日志
 log/my.log
