@@ -2,13 +2,13 @@ import utils
 from db.query import query_data_by_id
 import generate_v2 as generate
 import json
-
+from log.index import info, error
 
 def auto_work():
     data_list = utils.read_elsx(".")
     for item in data_list:
         id = item["样式参考id"]
-        print(item["Topic（话题）"], "开启获取数据")
+        info(item["Topic（话题）"], "开启获取数据")
         consult = query_data_by_id(id)[0]
         # consult["content"] = utils.stringEncodingFun(consult["content"])
         result_data = generate.openai_stream(item["Topic（话题）"], consult)
@@ -29,7 +29,7 @@ def auto_work_to_docx():
         # text = re.sub(r'\n\n', '<br />', text)
         obj = json.loads(text)
         utils.format_html(obj, './data/ai_data/' + str(item["生成文本序号"]) + '.docx')
-        print(obj['title'])
+        info(obj['title'])
 
 
 # auto_work_to_docx()
@@ -37,21 +37,21 @@ def auto_work_to_docx():
 
 def test_v2():
     data_list = utils.read_elsx("./测试话题.xlsx")
-    print("开始运行")
+    info("开始运行")
     for item in data_list:
-        print(item['Topic（话题）'])
+        info(item['Topic（话题）'])
         try:
             result_data = generate.openai_stream(item['Topic（话题）'])
-            print(result_data)
+            info(result_data)
             with open('./data/test/data_json/' + item['Topic（话题）'] + '.html', 'w') as f:
                 f.write(result_data)
             utils.format_html(result_data, './data/ai_data/v2/' + item['Topic（话题）'] + '.docx')
         except Exception as e:
             # 处理异常
-            print(f"任务 发生异常：{e}")
+            error(f"写入docx发生错误：{e}")
             continue
         finally:
-            print('finally')
+            info('finally')
 
 
 test_v2()
