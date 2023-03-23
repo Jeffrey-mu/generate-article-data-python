@@ -51,17 +51,19 @@ def openai_stream(title) -> str:
         response_item_docx = response.json()["choices"][0]['message']['content']
         info(response)
         json_data = json.loads(response_item_docx)
-        html_data = ''
+        html_data = f"<p>title: {json_data['title']}</p><p>description: {json_data['description']}</p><p>keywords: {json_data['keywords']}</p>"
         info(json_data['content'])
         for item in json_data["content"]:
             try:
                 info('优化段落:' + item['p'])
-                embroidery_data = embroidery(item['p']).json()["choices"][0]['message']['content']
+                params = f"Revisit the content based on the {item.get('h2', item.get('h1', ''))},content:{item['p']}"
+                embroidery_data = embroidery(params).json()["choices"][0]['message']['content']
                 info('优化段落block')
                 info(embroidery_data)
                 info('优化段落end')
                 item['p'] = embroidery_data
-                html_data += f"{get_value('h1', item)}{get_value('h2', item)}{get_value('ul', item)}{get_value('p', item)}<img src='{get_value('img', item)}' /> <br>"
+                # html_data += f"{get_value('h1', item)}{get_value('h2', item)}{get_value('ul', item)}<div  class='purple'>{get_value('p', item)}</div><div  class='green'>{embroidery_data}</div><img src='{get_value('img', item)}' /> <br>"
+                html_data += f"{get_value('h1', item)}{get_value('h2', item)}{get_value('ul', item)}<div  class='green'>{embroidery_data}</div><img src='{get_value('img', item)}' /> <br>"
             except Exception as e:
                 # 处理异常
                 error(f"任务 发生异常：{e}")
