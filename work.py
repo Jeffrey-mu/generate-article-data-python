@@ -4,6 +4,8 @@ import generate_v2 as generate
 import json
 from log.index import info, error
 import threading
+from config import project_path
+
 
 def auto_work():
     data_list = utils.read_excel(".")
@@ -15,16 +17,16 @@ def auto_work():
         result_data = generate.openai_stream(item["Topic（话题）"], consult)
         # result_data["data_type"] = item["数据类型"]
         # result_data["data_second_type"] = item["二级数据"]
-        with open('./data/data_json/' + str(item["生成文本序号"]) + '.json', 'w') as f:
+        with open(project_path + '/data/data_json/' + str(item["生成文本序号"]) + '.json', 'w') as f:
             f.write(result_data)
 
 
 # auto_work()
 
 def auto_work_to_docx():
-    data_list = utils.read_excel("./chatgpt内容生成id(1) copy.xlsx")
-    for item in data_list:
-        path = f'./data_json/{item["生成文本序号"]}.json'
+    data_list = utils.read_excel("./测试话题.xlsx")
+    for item in data_list[0: 10]:
+        path = f'{project_path}/data_json/{item["生成文本序号"]}.json'
         with open(path, 'r', encoding='utf-8') as f:
             text = f.read()
         # text = re.sub(r'\n\n', '<br />', text)
@@ -35,11 +37,10 @@ def auto_work_to_docx():
 
 # auto_work_to_docx()
 
-
 def test_v2():
-    data_list = utils.read_excel("./chatgpt内容生成id(1) copy 3.xlsx")
+    data_list = utils.read_excel(project_path + "/文章测试话题.xlsx")
     info("开始运行")
-    for item in data_list:
+    for item in data_list[0: 2]:
         try:
             t = threading.Thread(target=worker, args=(item,))
             t.start()
@@ -49,17 +50,27 @@ def test_v2():
             continue
 
 
-def worker(data):
+file_path = 'v4'
+
+
+def worker(data, count=3):
     info(data['Topic（话题）'])
     try:
         result_data = generate.openai_stream(data['Topic（话题）'])
-        info(result_data)
-        with open('./data/test/data_json/' + data['Topic（话题）'] + '.html', 'w') as f:
+        info(f"标题{data['Topic（话题）']}内容长度： {len(result_data)}")
+        with open(project_path + '/data/test/' + file_path + '/' + data['Topic（话题）'] + '.html', 'w') as f:
             f.write(result_data)
-        utils.format_html(result_data, './data/ai_data/v2/' + data['Topic（话题）'] + '.docx')
+        utils.format_html(result_data, project_path + '/data/ai_data/' + file_path + '/' + data['Topic（话题）'] + '.docx')
     except Exception as e:
         # 处理异常
-        error(f"写入docx发生错误：{e}")
+        error(f"{data['Topic（话题）']}写入docx发生错误：{e}")
+        if count >= 0:
+            info(f"重复执行 {data['Topic（话题）']}{count - 1} 次")
+            worker(data, count - 1)
+        else:
+            error(f"{data['Topic（话题）']}任务以失败3次")
+            with open(project_path + '/Failed_Task.txt', 'a') as f:
+                f.write("{data['Topic（话题）']}任务以失败3次.\n")
     finally:
         info('finally')
 

@@ -47,6 +47,32 @@ def format_html(data, file_name):
     pypandoc.convert_text(html, 'docx', 'html', outputfile=file_name)  # 将 html 代码转化成docx
 
 
+# 处理文本
+def revise_html(html_str, overall=True):
+    if html_str == "" or not isinstance(html_str, str):
+        return ""
+    # 定义匹配的正则表达式
+    pattern = re.compile(r"^<(p|h1|h2|h3|li)>.*<\/\1>$")
+    pattern_img = re.compile(r"^<img\s.*\s?\/?>$")
+    html_str = html_str.replace('<div>', '')
+    html_str = html_str.replace('</div>', '')
+    # 剔除所有div
+    # 定义一个空列表，用于存放处理后的每个元素
+    wrapped_arr = []
+    # 循环遍历每个元素并添加包裹符号
+    for elem in list(filter(lambda x: x.strip() != "", html_str.split('\n'))):
+        if not html_str.__contains__('<p>') and not html_str.__contains__('ul>') and not elem.__contains__('overall'):
+            wrapped_arr.append(f"<p>{elem}</p>")
+        else:
+            result = pattern.match(elem) or pattern_img.match(elem) or elem.__contains__('ul>')
+            wrapped_elem = elem
+            if result:
+                wrapped_arr.append(wrapped_elem)
+        # 使用join()方法将所有元素合并成一个字符串
+        embroidery_data = "\n".join(wrapped_arr)
+    return embroidery_data
+
+
 def read_excel(file_path):
     # 打开Excel文件
     workbook = openpyxl.load_workbook(file_path)
