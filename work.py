@@ -6,7 +6,7 @@ from log.index import info, error
 import threading
 
 def auto_work():
-    data_list = utils.read_elsx(".")
+    data_list = utils.read_excel(".")
     for item in data_list:
         id = item["样式参考id"]
         info(item["Topic（话题）"], "开启获取数据")
@@ -22,7 +22,7 @@ def auto_work():
 # auto_work()
 
 def auto_work_to_docx():
-    data_list = utils.read_elsx("./chatgpt内容生成id(1) copy.xlsx")
+    data_list = utils.read_excel("./chatgpt内容生成id(1) copy.xlsx")
     for item in data_list:
         path = f'./data_json/{item["生成文本序号"]}.json'
         with open(path, 'r', encoding='utf-8') as f:
@@ -37,7 +37,7 @@ def auto_work_to_docx():
 
 
 def test_v2():
-    data_list = utils.read_elsx("./测试话题.xlsx")
+    data_list = utils.read_excel("./测试话题.xlsx")
     info("开始运行")
     for item in data_list:
         try:
