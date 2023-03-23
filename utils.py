@@ -47,8 +47,7 @@ def format_html(data, file_name):
     pypandoc.convert_text(html, 'docx', 'html', outputfile=file_name)  # 将 html 代码转化成docx
 
 
-
-def read_elsx(file_path):
+def read_excel(file_path):
     # 打开Excel文件
     workbook = openpyxl.load_workbook(file_path)
 
