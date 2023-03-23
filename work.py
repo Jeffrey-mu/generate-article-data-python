@@ -3,6 +3,7 @@ from db.query import query_data_by_id
 import generate_v2 as generate
 import json
 from log.index import info, error
+import threading
 
 def auto_work():
     data_list = utils.read_elsx(".")
@@ -39,19 +40,28 @@ def test_v2():
     data_list = utils.read_elsx("./测试话题.xlsx")
     info("开始运行")
     for item in data_list:
-        info(item['Topic（话题）'])
         try:
-            result_data = generate.openai_stream(item['Topic（话题）'])
-            info(result_data)
-            with open('./data/test/data_json/' + item['Topic（话题）'] + '.html', 'w') as f:
-                f.write(result_data)
-            utils.format_html(result_data, './data/ai_data/v2/' + item['Topic（话题）'] + '.docx')
+            t = threading.Thread(target=worker, args=(item,))
+            t.start()
         except Exception as e:
             # 处理异常
-            error(f"写入docx发生错误：{e}")
+            error(f"线程错误：{e}")
             continue
-        finally:
-            info('finally')
+
+
+def worker(data):
+    info(data['Topic（话题）'])
+    try:
+        result_data = generate.openai_stream(data['Topic（话题）'])
+        info(result_data)
+        with open('./data/test/data_json/' + data['Topic（话题）'] + '.html', 'w') as f:
+            f.write(result_data)
+        utils.format_html(result_data, './data/ai_data/v2/' + data['Topic（话题）'] + '.docx')
+    except Exception as e:
+        # 处理异常
+        error(f"写入docx发生错误：{e}")
+    finally:
+        info('finally')
 
 
 test_v2()
