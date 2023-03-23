@@ -3,6 +3,8 @@ import json
 import random
 from config import OPENAI_API_KEY
 from log.index import info, error
+
+
 def openai_stream(title) -> str:
     payload = dict()
     payload['model'] = 'gpt-3.5-turbo'
@@ -122,7 +124,6 @@ def embroidery(title) -> str:
 
 
 def get_request(payload):
-
     base_path = 'https://api.openai.com'
     headers = {
         "Content-Type": "application/json",

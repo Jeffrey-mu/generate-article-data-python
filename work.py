@@ -37,7 +37,7 @@ def auto_work_to_docx():
 
 
 def test_v2():
-    data_list = utils.read_excel("./测试话题.xlsx")
+    data_list = utils.read_excel("./chatgpt内容生成id(1) copy 3.xlsx")
     info("开始运行")
     for item in data_list:
         try:

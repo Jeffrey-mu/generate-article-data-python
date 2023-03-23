@@ -2,6 +2,7 @@ import requests
 import json
 from config import OPENAI_API_KEY
 
+
 def openai_stream(title) -> str:
     print(title)
     payload = dict()
@@ -62,7 +63,6 @@ def openai_stream(title) -> str:
 
 
 def get_request(payload):
-
     base_path = 'https://api.openai.com'
     headers = {
         "Content-Type": "application/json",
