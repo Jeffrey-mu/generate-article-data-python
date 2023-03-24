@@ -14,14 +14,12 @@ def auto_work():
         info(item["Topic（话题）"], "开启获取数据")
         consult = query_data_by_id(id)[0]
         # consult["content"] = utils.stringEncodingFun(consult["content"])
-        result_data = generate.openai_stream(item["Topic（话题）"], consult)
+        result_data = generate.get_article(item["Topic（话题）"], consult)
         # result_data["data_type"] = item["数据类型"]
         # result_data["data_second_type"] = item["二级数据"]
         with open(project_path + '/data/data_json/' + str(item["生成文本序号"]) + '.json', 'w') as f:
             f.write(result_data)
 
-
-# auto_work()
 
 def auto_work_to_docx():
     data_list = utils.read_excel("./测试话题.xlsx")
@@ -35,12 +33,7 @@ def auto_work_to_docx():
         info(obj['title'])
 
 
-# auto_work_to_docx()
-
-
-
-
-def test_v2():
+def start_task():
     data_list = utils.read_excel(project_path + "/文章测试话题.xlsx")
     info("开始运行")
     for item in data_list[20: 24]:
@@ -59,7 +52,7 @@ file_path = 'v4'
 def worker(data):
     info(data['Topic（话题）'])
     try:
-        result_data = generate.openai_stream(data['Topic（话题）'])
+        result_data = generate.get_article(data['Topic（话题）'])
         info(f"标题{data['Topic（话题）']}内容长度： {len(result_data)}")
         with open(project_path + '/data/test/' + file_path + '/' + data['Topic（话题）'] + '.html', 'w') as f:
             f.write(result_data)
@@ -71,4 +64,4 @@ def worker(data):
         info('finally')
 
 
-test_v2()
+start_task()

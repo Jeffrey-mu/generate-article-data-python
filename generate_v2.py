@@ -6,7 +6,7 @@ from log.index import info, error
 from utils import revise_html, is_json, revise_json, cut_json
 
 
-def openai_stream(title) -> str:
+def get_article(title) -> str:
     payload = dict()
     payload['model'] = 'gpt-3.5-turbo'
     payload['max_tokens'] = 1500
