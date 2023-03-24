@@ -113,3 +113,33 @@ def get_atticl_data(title):
         })
     stream = response.json()
     return stream
+
+
+def is_json(json_str):
+    try:
+        json.loads(json_str)
+    except ValueError as e:
+        return False
+    return True
+
+
+def revise_json(json_str):
+    pattern = re.compile(r'"content": \[(.*?)\]', re.DOTALL)
+    match = pattern.search(json_str)
+    if match:
+        content_str = match.group(1)
+        arr = content_str.split('\n')
+        for i in range(len(arr) - 1):
+            if arr[i] != '' and not '{' in arr[i] and not '}' in arr[i] and not '}' in arr[i + 1]:
+                if not arr[i].endswith(','):
+                    arr[i] = arr[i] + ','
+        json_str = json_str.replace(content_str, '\n'.join(arr))
+    else:
+        print("No match found.")
+    return json_str
+
+
+def cut_json(json_str):
+    pattern = re.compile(r'\{(.+)\}', re.DOTALL)
+    match = pattern.search(json_str)
+    return '{' + match.group(1) + '}'
