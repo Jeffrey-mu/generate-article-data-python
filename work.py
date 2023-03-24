@@ -25,7 +25,7 @@ def auto_work():
 
 def auto_work_to_docx():
     data_list = utils.read_excel("./测试话题.xlsx")
-    for item in data_list[0: 10]:
+    for item in data_list[20: 24]:
         path = f'{project_path}/data_json/{item["生成文本序号"]}.json'
         with open(path, 'r', encoding='utf-8') as f:
             text = f.read()
@@ -37,10 +37,13 @@ def auto_work_to_docx():
 
 # auto_work_to_docx()
 
+
+
+
 def test_v2():
     data_list = utils.read_excel(project_path + "/文章测试话题.xlsx")
     info("开始运行")
-    for item in data_list[0: 2]:
+    for item in data_list[20: 24]:
         try:
             t = threading.Thread(target=worker, args=(item,))
             t.start()
@@ -53,7 +56,7 @@ def test_v2():
 file_path = 'v4'
 
 
-def worker(data, count=3):
+def worker(data):
     info(data['Topic（话题）'])
     try:
         result_data = generate.openai_stream(data['Topic（话题）'])
@@ -64,13 +67,6 @@ def worker(data, count=3):
     except Exception as e:
         # 处理异常
         error(f"{data['Topic（话题）']}写入docx发生错误：{e}")
-        if count >= 0:
-            info(f"重复执行 {data['Topic（话题）']}{count - 1} 次")
-            worker(data, count - 1)
-        else:
-            error(f"{data['Topic（话题）']}任务以失败3次")
-            with open(project_path + '/Failed_Task.txt', 'a') as f:
-                f.write("{data['Topic（话题）']}任务以失败3次.\n")
     finally:
         info('finally')
 

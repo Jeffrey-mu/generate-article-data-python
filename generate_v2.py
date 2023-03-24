@@ -1,10 +1,9 @@
 import requests
 import json
 import random
-from config import OPENAI_API_KEY
+from config import OPENAI_API_KEY, project_path
 from log.index import info, error
-from utils import revise_html
-import re
+from utils import revise_html, is_json, revise_json, cut_json
 
 
 def openai_stream(title) -> str:
@@ -21,42 +20,51 @@ def openai_stream(title) -> str:
                 format requirement；
                 Your essay should be between 1000 and 1200 words；
                 add a picture for each paragraph；
-                The last paragraph must summarize the article in 150-200 words
+                The last paragraph must summarize the article in 150-200 words；
+                Ensure that the json string is a correct json string structure
             """
         },
         {
             "role": "system",
             "content": "When you need to add an image, please use the img tag and fill in the src attribute https://source.unsplash.com/600x400/? <PUT YOUR QUERY HERE>"
         },
-        {"role": "user", "content": f"the returned content must be html code"},
+        {
+            "role": "user",
+            "content": f"the returned content must be html code"},
         {"role": "user",
-         "content": f"When h1 appears at the top of the article, the paragraph structure needs to be h2 p img, and no other tags need to appear"},
-        {"role": "user", "content":
-            """
-            Return Structure Reference：
-               {
-                  title: '',
-                  keywords: '',
-                  description: '',
-                  content: [
-                    {
-                      h1: 'xxx',
-                      h2: 'xxx',
-                      p: 'xxx',
-                      img: '',
+         "content": f"When h1 appears at the top of the article, the paragraph structure needs to be h2 p img, and no other tags need to appear"
+         },
+        {
+            "role": "user",
+            "content":
+                """
+                Return Structure Reference：
+                   {
+                      title: '',
+                      keywords: '',
+                      description: '',
+                      content: [
+                        {
+                          h1: 'xxx',
+                          h2: 'xxx',
+                          p: 'xxx',
+                          img: '',
+                        }
+                      ]
                     }
-                  ]
-                }
-            """},
+                """},
         {"role": "user",
          "content": f"To write an essay titled  \"{title}\""},
     ]
     try:
         response = get_request(payload)
-        response_item_docx = response.json()["choices"][0]['message']['content']
+        response_item_docx = cut_json(response.json()["choices"][0]['message']['content'])
         info(response)
-        json_data = json.loads(response_item_docx)
-        html_data = f"<p>title: {json_data['title']}</p><p>description: {json_data['description']}</p><p>keywords: {json_data['keywords']}</p>"
+        if is_json(response_item_docx):
+            json_data = json.loads(response_item_docx)
+        else:
+            json_data = json.loads(revise_json(response_item_docx))
+        html_data = f"<p>topic: {title}</p><p>title: {json_data['title']}</p><p>description: {json_data['description']}</p><p>keywords: {json_data['keywords']}</p>"
         info(json_data['content'])
         # 结论不做优化
         for item in json_data["content"][0: len(json_data["content"]) - 1]:
@@ -64,12 +72,9 @@ def openai_stream(title) -> str:
             try:
                 info('优化段落:' + item['p'])
                 params = f"Revisit the content based on the {item.get('h2', item.get('h1', ''))},content:{item['p']}"
-                # params = f"Revisit the content based on the {item.get('h2', item.get('h1', ''))},content:{item['p']}"
-                # embroidery_data = embroidery(item.get('h2', item.get('h1', '')), item['p']).json()["choices"][0]['message']['content']
                 embroidery_data = revise_html(embroidery(params).json()["choices"][0]['message']['content'])
                 item['p'] = embroidery_data
-                # html_data += f"{get_value('h1', item)}{get_value('h2', item)}{get_value('ul', item)}<div  class='purple'>{get_value('p', item)}</div><div  class='green'>{embroidery_data}</div><img src='{get_value('img', item)}' /> <br>"
-                html_data += f"{get_value('h1', item)}{get_value('h2', item)}{get_value('ul', item)}<div  class='green'>{embroidery_data}</div><img src='{get_value('img', item, False)}' /> <br>"
+                html_data += f"{get_value('h1', item)}{get_value('h2', item)}{get_value('ul', item)}<div>{embroidery_data}</div><img src='{get_value('img', item, False)}' /> <br>"
 
             except Exception as e:
                 # 处理异常
@@ -94,12 +99,12 @@ def get_value(key, obj, format=True):
         if format:
             return f"<{key}>{obj[key]}</{key}>"
         else:
-            return f"<{obj[key]}"
+            return f"{obj[key]}"
     else:
         return ''
 
 
-def embroidery(title, count=2) -> str:
+def embroidery(title) -> str:
     token = random.randrange(200, 300)
     payload = dict()
     payload['model'] = 'gpt-3.5-turbo'
@@ -127,31 +132,20 @@ def embroidery(title, count=2) -> str:
             "role": "system",
             "content": "There is no need to summarize the content at the end of the article"
         },
-        {"role": "user",
-         "content": f" \"{title}\"The optimization word count of {token} words and use html tags to decorate the content and there is no need for the h2 h1 title to appear"},
-        # {"role": "user",
-        #  "content": f"""
-        #     First, determine the title of the article that needs to be optimized as {title}.
-        #     What needs to be optimized is {content};
-        #     For specific operations, consider adding some relevant information, supplementing details, providing arguments,
-        #     and other methods to expand the content of the article until the number of words reaches{token}.
-        #     Can't return h2 Title Title needs to start from h3
-        #     and use html tags to decorate the content
-        #  """},
+        {
+            "role": "user",
+            "content": f" \"{title}\"The optimization word count of {token} words and use html tags to decorate the content and there is no need for the h2 h1 title to appear"
+        },
     ]
     try:
         response = get_request(payload)
-        info("优化结果" + response.json()["choices"][0]['message']['content'])
         return response
     except (KeyError, IndexError):
-        if count >= 0:
-            embroidery(title, count - 1)
-            info("优化失败，重新优化")
-        else:
-            return ""
+        return ""
 
 
-def get_request(payload):
+#
+def get_request(payload, count=3):
     base_path = 'https://api.openai.com'
     headers = {
         "Content-Type": "application/json",
@@ -159,6 +153,13 @@ def get_request(payload):
     }
     try:
         response = requests.post(base_path + "/v1/chat/completions", headers=headers, data=json.dumps(payload))
+        info("gpt-3.5-turbo 响应数据" + response.json()["choices"][0]['message']['content'])
         return response
     except (KeyError, IndexError):
+        if count > 0:
+            get_request(payload, count - 1)
+        else:
+            print('网络请求失败三次')
+            with open(project_path + '/Failed_Task.txt', 'a') as f:
+                f.write(f"{payload['messages'][len(payload['messages'] - 1)]}任务以失败3次.\n")
         return ""
